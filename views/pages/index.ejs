@@ -8,7 +8,7 @@
 <body>
   <header>
     <h1>Best Books!</h1>
-    <a id="search-nav" href="/searches/new">Search For a New Book</a>
+    <a id="search-nav" href="/api/v2/searches/new">Search For a New Book</a>
     <img src="https://icon-library.com/images/white-menu-icon/white-menu-icon-4.jpg" />
   </header>
 
@@ -22,7 +22,7 @@
 
     <ul>
       <% results.forEach(book=> { %>
-        <li class="book-item" data-id="<%= book.id %>">
+        <li class="book-item" data-id="<%= book._id %>">
           <img class="book-image" src="<%= book.image_url %>" />
           <h4>
             <%= book.title %>
@@ -30,7 +30,7 @@
           <p>
             <%= book.author %>
           </p>
-          <p><a href="/books/<%= book.id %>">View Details</a></p>
+          <p><a href="/api/v2/books/<%= book._id %>">View Details</a></p>
         </li>
         <% }) %>
 

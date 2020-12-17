@@ -3,8 +3,8 @@
 const mongoose = require('mongoose');
 
 const bookSchema = mongoose.Schema({
-  title: { type: String, required: true },
   author: { type: String, required: false },
+  title: { type: String, required: true },
   isbn: { type: String, required: false },
   image_url: { type: String, required: false },
   description: { type: String, required: false }
