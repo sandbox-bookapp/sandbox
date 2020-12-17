@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <%- include('../components/head') %>
+
+</head>
+
+<body>
+
+  <header id="dumbHeader">
+    <h1>Best Books!</h1>
+    <img id="burger" src="https://icon-library.com/images/white-menu-icon/white-menu-icon-4.jpg" />
+    <nav>
+      <a href="/">Home</a>
+    </nav>
+  </header>
+  <main id="show-main">
+    <div id="book-detail">
+      <%- include('detail', {result: result})%>
+    </div>
+    <div id="update-form">
+      <%- include('edit', {result: result}) %>
+    </div>
+  </main>
+  <%- include('../components/footer')%>
+
+</body>
+
+</html>

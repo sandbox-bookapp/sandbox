@@ -1,0 +1,13 @@
+<section class="update-book">
+  <form id="update-form" action="/update/<%= result.id %>?_method=PUT" method="post">
+    <input type="text" name="title" value="<%= result.title %>">
+    <input type="text" name="author" value="<%= result.author %>">
+    <input type="text" name="isbn" value="<%= result.isbn %>">
+    <input type="text" name="image_url" value="<%= result.image_url %>">
+    <textarea id="text" name="description"><%= result.description %></textarea>
+    <button id="update-button" class="update-button" type="submit">Update Book</button>
+  </form>
+  <form id="delete-form" action="/delete/<%= result.id %>?_method=DELETE" method="post">
+    <button id="delete-button" class="update-button">Delete Book</button>
+  </form>
+</section>

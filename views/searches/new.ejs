@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <%- include('../components/head') %>
+</head>
+<header>
+  <h1>Best Books!</h1>
+  <img src="https://icon-library.com/images/white-menu-icon/white-menu-icon-4.jpg" />
+</header>
+
+<body>
+  <main>
+    <h2>Search By Title or Author</h2>
+    <form id="search-form" action="/searches" method="post">
+      <input id="textfield" type="text" name="search" placeholder="Enter a title or author" required>
+      <fieldset class="search-option" id="title">
+        <label for="title"> Title </label>
+        <input id="title-radio" type="radio" name="search" value="title" required>
+      </fieldset>
+      <fieldset class="search-option" id="author">
+        <label for="author"> Author</label>
+        <input id="author-radio" type="radio" name="search" value="author" required>
+      </fieldset>
+      <button id="search-button" type="submit">Search the Google Books API</button>
+    </form>
+
+  </main>
+  <%- include('../components/footer')%>
+</body>
+
+</html>

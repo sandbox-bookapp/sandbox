@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <%- include('../components/head') %>
+</head>
+
+<body>
+  <header>
+    <h1>Best Books!</h1>
+    <img src="https://icon-library.com/images/white-menu-icon/white-menu-icon-4.jpg" />
+  </header>
+  <main>
+    <h2>Search Results</h2>
+    <% let parsedData=JSON.parse(searchResults); %>
+      <% parsedData.forEach(book=>{ %>
+        <ul>
+          <li><img class="book-image" src="<%= book.image %>" /></li>
+          <li id="book-title">
+            <%= book.title %>
+          </li>
+          <li id="author-name">
+            <%= book.author %>
+          </li>
+          <li>
+            <%= book.description %>
+          </li>
+          <form action="/addBook" method="post">
+            <input type="hidden" name="author" value="<%=book.author %>">
+            <input type="hidden" name="title" value="<%=book.title %>">
+            <input type="hidden" name="isbn" value="<%=book.isbn %>">
+            <input type="hidden" name="image_url" value="<%=book.image %>">
+            <input type="hidden" name="description" value="<%=book.description %>">
+            <button type="submit">Add Book to Book Shelf</button>
+          </form>
+        </ul>
+        <% }); %>
+
+  </main>
+  <%- include('../components/footer')%>
+</body>
+
+</html>
