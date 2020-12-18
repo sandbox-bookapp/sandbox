@@ -1,6 +1,6 @@
 'use strict';
 
-const fs = require('fs');
+// const fs = require('fs');
 const express = require('express');
 const collection = require('../../models/data-collection.js');
 const router = express.Router();
@@ -56,35 +56,12 @@ async function renderHomePage(req, res) {
   let results = await collection.get();
   console.log(results);
   res.render('pages/index', { results });
-  // let SQL = 'SELECT * FROM  books;';
-  // return client.query(SQL)
-    // .then(results => res.render('pages/index', { results: results.rows }))
-    // .catch(err => console.error(err));
 }
-// async function handleGetAll(req, res) {
-//   let allRecords = await req.model.get();
-//   res.status(200).json(allRecords);
-// }
 async function addBook(req, res) {
-  // console.log(req.body);
   let obj = req.body;
-  // console.log(collection);
   await collection.create(obj);
-  // console.log('this is the record', newRecord);
-  // res.status(200).json(newRecord);
   res.redirect('home');
-  // let { title, author, isbn, image_url, description } = req.body;
-  // let SQL = 'INSERT INTO books(title, author, isbn, image_url, description) VALUES ($1, $2, $3, $4, $5);';
-  // let values = [title, author, isbn, image_url, description];
-  // return client.query(SQL, values)
-  //   .then(res.redirect('pages/index'))
-  //   .catch(err => console.error(err));
 }
-// async function handleCreate(req, res) {
-//   let obj = req.body;
-//   let newRecord = await req.model.create(obj);
-//   res.status(201).json(newRecord);
-// }
 function showForm(req, res) {
   res.render('pages/searches/new.ejs');
 }
@@ -109,30 +86,32 @@ function createSearch(req, res) {
 function renderError(req, res) {
   res.render('pages/error');
 }
-function getOneBook(req, res) {
-  let SQL = 'SELECT * FROM books WHERE id=$1;';
-  let values = [req.params.book_id];
-  return client.query(SQL, values)
-    .then(result => res.render('pages/books/show', { result: result.rows[0] }))
-    .catch(err => console.error(err));
-
+async function getOneBook(req, res) {
+  const id = req.params.book_id;
+  let result = await collection.get(id);
+  res.render('pages/books/show', { result })
 }
-function updateBook(req, res) {
-  let { title, author, isbn, image_url, description } = req.body;
-
-
-  let SQL = `UPDATE books SET title=$1, author=$2, isbn=$3, image_url=$4, description=$5 WHERE id=$6`;
-  let values = [title, author, isbn, image_url, description, req.params.book_id];
-  client.query(SQL, values)
-    .then(res.redirect(`/books/${req.params.book_id}`))
-    .catch(err => console.error(err));
+async function updateBook(req, res) {
+  // let { title, author, isbn, image_url, description } = req.body;
+  let id = req.params.book_id;
+  let obj = req.body;
+  await collection.update(id, obj);
+  res.redirect(`../books/${id}`);
 }
-function deleteBook(req, res) {
-  let SQL = `DELETE FROM books WHERE id=${req.params.book_id};`;
-  client.query(SQL)
-    .then(res.redirect(`/home`))
-    .catch(err => console.error(err));
+async function deleteBook(req, res) {
+  let id = req.params.book_id;
+  await collection.delete(id);
+  res.redirect('../home');
+  // let SQL = `DELETE FROM books WHERE id=${req.params.book_id};`;
+  // client.query(SQL)
+    // .then(res.redirect(`/home`))
+    // .catch(err => console.error(err));
 }
+// async function handleDelete(req, res) {
+//   let id = req.params.id;
+//   let deletedRecord = await req.model.delete(id);
+//   res.status(200).json(deletedRecord);
+// }
 function Book(info) {
   this.title = info.title || 'No title available.';
   this.author = info.authors || 'No Author Listed';

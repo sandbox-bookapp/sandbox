@@ -1,5 +1,5 @@
 <section class="update-book">
-  <form id="update-form" action="/api/v2/update/<%= result.id %>?_method=PUT" method="post">
+  <form id="update-form" action="/api/v2/update/<%= result._id %>?_method=PUT" method="post">
     <input type="text" name="title" value="<%= result.title %>">
     <input type="text" name="author" value="<%= result.author %>">
     <input type="text" name="isbn" value="<%= result.isbn %>">
@@ -7,7 +7,7 @@
     <textarea id="text" name="description"><%= result.description %></textarea>
     <button id="update-button" class="update-button" type="submit">Update Book</button>
   </form>
-  <form id="delete-form" action="/api/v2/delete/<%= result.id %>?_method=DELETE" method="post">
+  <form id="delete-form" action="/api/v2/delete/<%= result._id %>?_method=DELETE" method="post">
     <button id="delete-button" class="update-button">Delete Book</button>
   </form>
 </section>
