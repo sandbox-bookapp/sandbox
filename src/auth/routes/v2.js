@@ -5,52 +5,37 @@ const express = require('express');
 const collection = require('../../models/data-collection.js');
 const router = express.Router();
 const models = new Map();
+const User = require('../models/users.js');
+// router.use(express.urlencoded({extended:true}));
+// router.use(express.json());
+// router.use(express.static('./public'));
+
 const acl = require('../middleware/acl');
 const basicAuth = require('../middleware/basic');
 const bearerAuth = require('../middleware/bearer');
 const superagent = require('superagent');
-const methodOverride = require('method-override');
-router.use(methodOverride('_method'));
+// const methodOverride = require('method-override');
+// router.use(methodOverride('_method'));
 
 
-// router.param('model', (req, res, next) => {
-//   const modelName = req.params.model;
-//   console.log(modelName);
-//   if (models.has(modelName)) {
-//     req.model = models.get(modelName);
-//     next();
-//   } else {
-//     const fileName = `${__dirname}/../../models/${modelName}/model.js`;
-//     if (fs.existsSync(fileName)) {
-//       const model = require(fileName);
-//       models.set(modelName, new Collection(model));
-//       req.model = models.get(modelName);
-//       next();
-//     }
-//     else {
-//       next("Invalid Model");
-//     }
-//   }
-// });
-
-// router.get('/', userLog);
-router.get('/home', renderHomePage);
-router.post('/addBook', addBook);
-router.get('/searches/new', showForm);
-router.post('/searches', createSearch);
-router.get('/pages/error', renderError);
-router.get('/books/:book_id', getOneBook);
-router.put('/update/:book_id', updateBook);
-router.delete('/delete/:book_id', deleteBook);
+router.get('/', userLog);
+router.get('/home', basicAuth, renderHomePage);
+router.post('/addBook', bearerAuth, acl('create'), addBook);
+router.get('/searches/new', bearerAuth, acl('read'), showForm);
+router.post('/searches', bearerAuth, acl('create'), createSearch);
+router.get('/pages/error', bearerAuth, acl('read'), renderError);
+router.get('/books/:book_id', bearerAuth, acl('read'), getOneBook);
+router.put('/update/:book_id', bearerAuth, acl('update'), updateBook);
+router.delete('/delete/:book_id', bearerAuth, acl('delete'), deleteBook);
 // router.get('/:model', basicAuth, handleGetAll);
 // router.get('/:model/:id', basicAuth, handleGetOne);
 // router.post('/:model', bearerAuth, acl('create'), handleCreate);
 // router.put('/:model/:id', bearerAuth, acl('update'), handleUpdate);
 // router.delete('/:model/:id', bearerAuth, acl('delete'), handleDelete);
 
-// function userLog(req, res){
-// 
-// }
+function userLog(req, res){
+  res.render('pages/user');
+}
 async function renderHomePage(req, res) {
   console.log('this is the homepage', collection);
   let results = await collection.get();
@@ -107,11 +92,6 @@ async function deleteBook(req, res) {
     // .then(res.redirect(`/home`))
     // .catch(err => console.error(err));
 }
-// async function handleDelete(req, res) {
-//   let id = req.params.id;
-//   let deletedRecord = await req.model.delete(id);
-//   res.status(200).json(deletedRecord);
-// }
 function Book(info) {
   this.title = info.title || 'No title available.';
   this.author = info.authors || 'No Author Listed';
@@ -126,6 +106,40 @@ function Book(info) {
 
   }
 }
+router.post('/signup', async function(req, res, next) {
+  console.log('this is the router', req.body);
+  try {
+    let user = new User(req.body);
+    await user.save();
+    // const output = {
+    //   user: userRecord,
+    //   token: userRecord.token
+    // };
+    res.redirect('/');
+    // res.status(201).json(output);
+  } catch (e) {
+    next(e.message)
+  }
+});
+
+router.post('/signin', basicAuth, (req, res, next) => {
+  // const user = {
+  //   user: req.user,
+  //   token: req.user.token
+  // };
+  res.redirect('home');
+  res.status(200).json(user);
+});
+
+router.get('/users', bearerAuth, acl('delete'), async (req, res, next) => {
+  const users = await User.find({});
+  const list = users.map(user => user.username);
+  res.status(200).json(list);
+});
+
+router.get('/secret', bearerAuth, async (req, res, next) => {
+  res.status(200).send('Welcome to the secret area')
+});
 // async function handleGetAll(req, res) {
 //   let allRecords = await req.model.get();
 //   res.status(200).json(allRecords);

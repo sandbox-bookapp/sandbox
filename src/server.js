@@ -22,7 +22,7 @@ app.use(cors());
 app.use(express.json());
 app.use(methodOverride('_method'));
 app.use(express.static('./public'));
-app.use(express.urlencoded({extended:true}));
+app.use(express.urlencoded({extended:false}));
 app.set('view engine', 'ejs');
 
 
@@ -33,6 +33,7 @@ app.use(authRoutes);
 app.use('/api/v2', v2Routes);
 
 // app.use('/user', userLog);
+
 
 app.use('*', notFoundHandler);
 app.use(errorHandler);
