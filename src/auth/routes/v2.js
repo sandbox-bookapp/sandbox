@@ -1,37 +1,27 @@
 'use strict';
 
-// const fs = require('fs');
 const express = require('express');
 const collection = require('../../models/data-collection.js');
 const router = express.Router();
 const models = new Map();
 const User = require('../models/users.js');
-// router.use(express.urlencoded({extended:true}));
-// router.use(express.json());
-// router.use(express.static('./public'));
 
 const acl = require('../middleware/acl');
 const basicAuth = require('../middleware/basic');
 const bearerAuth = require('../middleware/bearer');
 const superagent = require('superagent');
-// const methodOverride = require('method-override');
-// router.use(methodOverride('_method'));
 
 
 router.get('/', userLog);
-router.get('/home', basicAuth, renderHomePage);
-router.post('/addBook', bearerAuth, acl('create'), addBook);
-router.get('/searches/new', bearerAuth, acl('read'), showForm);
-router.post('/searches', bearerAuth, acl('create'), createSearch);
-router.get('/pages/error', bearerAuth, acl('read'), renderError);
-router.get('/books/:book_id', bearerAuth, acl('read'), getOneBook);
-router.put('/update/:book_id', bearerAuth, acl('update'), updateBook);
-router.delete('/delete/:book_id', bearerAuth, acl('delete'), deleteBook);
-// router.get('/:model', basicAuth, handleGetAll);
-// router.get('/:model/:id', basicAuth, handleGetOne);
-// router.post('/:model', bearerAuth, acl('create'), handleCreate);
-// router.put('/:model/:id', bearerAuth, acl('update'), handleUpdate);
-// router.delete('/:model/:id', bearerAuth, acl('delete'), handleDelete);
+router.get('/home', renderHomePage);
+router.post('/addBook', addBook);
+router.get('/searches/new', showForm);
+router.post('/searches', createSearch);
+router.get('/pages/error', renderError);
+router.get('/books/:book_id', getOneBook);
+router.put('/update/:book_id', updateBook);
+router.delete('/delete/:book_id', deleteBook);
+
 
 function userLog(req, res){
   res.render('pages/user');
@@ -111,22 +101,13 @@ router.post('/signup', async function(req, res, next) {
   try {
     let user = new User(req.body);
     await user.save();
-    // const output = {
-    //   user: userRecord,
-    //   token: userRecord.token
-    // };
     res.redirect('/');
-    // res.status(201).json(output);
   } catch (e) {
     next(e.message)
   }
 });
 
 router.post('/signin', basicAuth, (req, res, next) => {
-  // const user = {
-  //   user: req.user,
-  //   token: req.user.token
-  // };
   res.redirect('home');
   res.status(200).json(user);
 });
@@ -140,35 +121,5 @@ router.get('/users', bearerAuth, acl('delete'), async (req, res, next) => {
 router.get('/secret', bearerAuth, async (req, res, next) => {
   res.status(200).send('Welcome to the secret area')
 });
-// async function handleGetAll(req, res) {
-//   let allRecords = await req.model.get();
-//   res.status(200).json(allRecords);
-// }
-
-// async function handleGetOne(req, res) {
-//   const id = req.params.id;
-//   let theRecord = await req.model.get(id)
-//   res.status(200).json(theRecord);
-// }
-
-// async function handleCreate(req, res) {
-//   let obj = req.body;
-//   let newRecord = await req.model.create(obj);
-//   res.status(201).json(newRecord);
-// }
-
-// async function handleUpdate(req, res) {
-//   const id = req.params.id;
-//   const obj = req.body;
-//   let updatedRecord = await req.model.update(id, obj)
-//   res.status(200).json(updatedRecord);
-// }
-
-// async function handleDelete(req, res) {
-//   let id = req.params.id;
-//   let deletedRecord = await req.model.delete(id);
-//   res.status(200).json(deletedRecord);
-// }
-
 
 module.exports = router;
