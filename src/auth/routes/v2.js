@@ -1,80 +1,57 @@
 'use strict';
 
-const fs = require('fs');
+// const fs = require('fs');
 const express = require('express');
-const Collection = require('../../models/data-collection.js');
+const collection = require('../../models/data-collection.js');
 const router = express.Router();
 const models = new Map();
+const User = require('../models/users.js');
+// router.use(express.urlencoded({extended:true}));
+// router.use(express.json());
+// router.use(express.static('./public'));
+
 const acl = require('../middleware/acl');
 const basicAuth = require('../middleware/basic');
 const bearerAuth = require('../middleware/bearer');
 const superagent = require('superagent');
-const methodOverride = require('method-override');
-router.use(methodOverride('_method'));
+// const methodOverride = require('method-override');
+// router.use(methodOverride('_method'));
 
 
-router.param('model', (req, res, next) => {
-  const modelName = req.params.model;
-  if (models.has(modelName)) {
-    req.model = models.get(modelName);
-    next();
-  } else {
-    const fileName = `${__dirname}/../../models/${modelName}/model.js`;
-    if (fs.existsSync(fileName)) {
-      const model = require(fileName);
-      models.set(modelName, new Collection(model));
-      req.model = models.get(modelName);
-      next();
-    }
-    else {
-      next("Invalid Model");
-    }
-  }
-});
-
-// router.get('/', userLog);
-router.get('/home', renderHomePage);
-router.post('/addBook', addBook);
-router.get('/searches/new', showForm);
-router.post('/searches', createSearch);
-router.get('/pages/error', renderError);
-router.get('/books/:book_id', getOneBook);
-router.put('/update/:book_id', updateBook);
-router.delete('/delete/:book_id', deleteBook);
+router.get('/', userLog);
+router.get('/home', basicAuth, renderHomePage);
+router.post('/addBook', bearerAuth, acl('create'), addBook);
+router.get('/searches/new', bearerAuth, acl('read'), showForm);
+router.post('/searches', bearerAuth, acl('create'), createSearch);
+router.get('/pages/error', bearerAuth, acl('read'), renderError);
+router.get('/books/:book_id', bearerAuth, acl('read'), getOneBook);
+router.put('/update/:book_id', bearerAuth, acl('update'), updateBook);
+router.delete('/delete/:book_id', bearerAuth, acl('delete'), deleteBook);
 // router.get('/:model', basicAuth, handleGetAll);
 // router.get('/:model/:id', basicAuth, handleGetOne);
 // router.post('/:model', bearerAuth, acl('create'), handleCreate);
 // router.put('/:model/:id', bearerAuth, acl('update'), handleUpdate);
 // router.delete('/:model/:id', bearerAuth, acl('delete'), handleDelete);
 
-// function userLog(req, res){
-// 
-// }
+function userLog(req, res){
+  res.render('pages/user');
+}
 async function renderHomePage(req, res) {
-  console.log(req.body);
-  let results = await req.model.get();
-  res.render('/api/v2/pages/index', {results: results.rows})
-  // let SQL = 'SELECT * FROM  books;';
-  // return client.query(SQL)
-    // .then(results => res.render('pages/index', { results: results.rows }))
-    // .catch(err => console.error(err));
+  console.log('this is the homepage', collection);
+  let results = await collection.get();
+  console.log(results);
+  res.render('pages/index', { results });
 }
-async function handleGetAll(req, res) {
-  let allRecords = await req.model.get();
-  res.status(200).json(allRecords);
-}
-function addBook(req, res) {
-  let { title, author, isbn, image_url, description } = req.body;
-  let SQL = 'INSERT INTO books(title, author, isbn, image_url, description) VALUES ($1, $2, $3, $4, $5);';
-  let values = [title, author, isbn, image_url, description];
-  return client.query(SQL, values)
-    .then(res.redirect('/api/v2/home'))
-    .catch(err => console.error(err));
+async function addBook(req, res) {
+  let obj = req.body;
+  await collection.create(obj);
+  res.redirect('home');
 }
 function showForm(req, res) {
   res.render('pages/searches/new.ejs');
 }
 function createSearch(req, res) {
+  console.log('made it to searches!');
   let url = 'https://www.googleapis.com/books/v1/volumes?q=';
   if (req.body.search[1] === 'title') { url += `+intitle:${req.body.search[0]}`; }
   if (req.body.search[1] === 'author') { url += `+inauthor:${req.body.search[0]}`; }
@@ -85,38 +62,35 @@ function createSearch(req, res) {
       });
     })
     .then(results => {
-      res.render('/api/v2/pages/searches/show.ejs', { searchResults: JSON.stringify(results) });
+      res.render('pages/searches/show.ejs', { searchResults: JSON.stringify(results) });
     })
     .catch(err => {
-      res.render('/api/v2/pages/error', err);
+      res.render('pages/error', err);
     });
 }
 function renderError(req, res) {
-  res.render('/api/v2/pages/error');
+  res.render('pages/error');
 }
-function getOneBook(req, res) {
-  let SQL = 'SELECT * FROM books WHERE id=$1;';
-  let values = [req.params.book_id];
-  return client.query(SQL, values)
-    .then(result => res.render('/api/v2/pages/books/show', { result: result.rows[0] }))
-    .catch(err => console.error(err));
-
+async function getOneBook(req, res) {
+  const id = req.params.book_id;
+  let result = await collection.get(id);
+  res.render('pages/books/show', { result })
 }
-function updateBook(req, res) {
-  let { title, author, isbn, image_url, description } = req.body;
-
-
-  let SQL = `UPDATE books SET title=$1, author=$2, isbn=$3, image_url=$4, description=$5 WHERE id=$6`;
-  let values = [title, author, isbn, image_url, description, req.params.book_id];
-  client.query(SQL, values)
-    .then(res.redirect(`/api/v2/books/${req.params.book_id}`))
-    .catch(err => console.error(err));
+async function updateBook(req, res) {
+  // let { title, author, isbn, image_url, description } = req.body;
+  let id = req.params.book_id;
+  let obj = req.body;
+  await collection.update(id, obj);
+  res.redirect(`../books/${id}`);
 }
-function deleteBook(req, res) {
-  let SQL = `DELETE FROM books WHERE id=${req.params.book_id};`;
-  client.query(SQL)
-    .then(res.redirect(`/api/v2/home`))
-    .catch(err => console.error(err));
+async function deleteBook(req, res) {
+  let id = req.params.book_id;
+  await collection.delete(id);
+  res.redirect('../home');
+  // let SQL = `DELETE FROM books WHERE id=${req.params.book_id};`;
+  // client.query(SQL)
+    // .then(res.redirect(`/home`))
+    // .catch(err => console.error(err));
 }
 function Book(info) {
   this.title = info.title || 'No title available.';
@@ -132,6 +106,40 @@ function Book(info) {
 
   }
 }
+router.post('/signup', async function(req, res, next) {
+  console.log('this is the router', req.body);
+  try {
+    let user = new User(req.body);
+    await user.save();
+    // const output = {
+    //   user: userRecord,
+    //   token: userRecord.token
+    // };
+    res.redirect('/');
+    // res.status(201).json(output);
+  } catch (e) {
+    next(e.message)
+  }
+});
+
+router.post('/signin', basicAuth, (req, res, next) => {
+  // const user = {
+  //   user: req.user,
+  //   token: req.user.token
+  // };
+  res.redirect('home');
+  res.status(200).json(user);
+});
+
+router.get('/users', bearerAuth, acl('delete'), async (req, res, next) => {
+  const users = await User.find({});
+  const list = users.map(user => user.username);
+  res.status(200).json(list);
+});
+
+router.get('/secret', bearerAuth, async (req, res, next) => {
+  res.status(200).send('Welcome to the secret area')
+});
 // async function handleGetAll(req, res) {
 //   let allRecords = await req.model.get();
 //   res.status(200).json(allRecords);

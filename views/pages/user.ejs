@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <%- include('./components/head') %>
+    </head>
+    <body >
+        <header>
+            <h1>Best Books!</h1>
+            <!-- <img src="https://icon-library.com/images/white-menu-icon/white-menu-icon-4.jpg" /> -->
+          </header>
+        <main class="index-main">
+            <section class="sub-header">
+                <h2>Sign Up</h2>
+                <form action="/api/v2/signup" method="post">
+                    <input name="username" class="textfield" type="text" value="username" required></input>
+                    <input name="password" class="textfield" type="text" value="password" required></input>
+                    <input name="role" class="textfield" type="text" value="adminusereditor" required></input>
+                    <button class="search-button" type="submit">Sign Up</button>
+                </form>
+                <h2>Sign In</h2>
+                <form action="/api/v2/signin" method="post">
+                    <input class="textfield" type="text" placeholder="username" required></input>
+                    <input class="textfield" type="text" placeholder="password" required></input>
+                    <input class="textfield" type="text" placeholder="adminusereditor" required></input>
+                    <button class="search-button" type="submit">Sign In</button>
+                </form>
+            </section>
+        </main>
+        <footer></footer>
+    </body>
+</html>
